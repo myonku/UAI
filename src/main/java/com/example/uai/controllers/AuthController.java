@@ -59,9 +59,7 @@ public class AuthController {
     @GetMapping("/checkRegister")
     public ResponseEntity<Object> checkRegister(@RequestParam String name, @RequestParam String email) {
         try {
-            Optional<User> user = userRepository.findByUsername(name);
-            Optional<User> user2 = userRepository.findByEmail(email);
-            if (user.isPresent() || user2.isPresent()) {
+            if (userRepository.existsByUsername(name) || userRepository.existsByEmail(email)) {
                 return ResponseEntity.ok().body("User already exists");
             } else {
                 return ResponseEntity.ok().body("ok");

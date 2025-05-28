@@ -1,5 +1,4 @@
 package com.example.uai.repository;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +12,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     // 判断邮箱是否已存在
     boolean existsByEmail(String email);
+
+    // 判断用户名是否存在
+    boolean existsByUsername(String username);
 
     // 通过邮箱查找用户
     Optional<User> findByEmail(String email);
