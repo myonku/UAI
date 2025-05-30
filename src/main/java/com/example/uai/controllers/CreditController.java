@@ -1,4 +1,5 @@
 package com.example.uai.controllers;
+
 import com.example.uai.models.Course;
 import com.example.uai.models.Credit;
 import com.example.uai.models.User;

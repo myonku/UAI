@@ -5,6 +5,8 @@ import register from "@/components/pages/register.vue"
 import home from "@/components/pages/homepage.vue"
 import teacher from "@/components/pages/teacherpage.vue"
 import admin from "@/components/pages/adminpage.vue"
+import user from "@/components/pages/account.vue"
+import unauthorized from "@/components/pages/unauthorized.vue"
 
 const router = createRouter({
 
@@ -38,21 +40,32 @@ const router = createRouter({
                     meta: { requiresAuth: true },
                 },
                 {
+                    path: "user",
+                    name: "user",
+                    component: user,
+                    meta: { requiresAuth: true },
+                },
+                {
                     path: "teacher",
                     name: "teacher",
                     component: teacher,
                     meta: { requiresAuth: true, requiresStaff: true }, // 需要 staff 权限
                 },
                 {
+                    path: "unauthorized",
+                    name: "unauthorized",
+                    component: unauthorized,
+                },
+                {
                     path: "admin",
                     name: "admin",
                     component: admin,
-                    meta: { requiresAuth: true, requiresSAdmin: true }, // 需要 admin 权限
+                    meta: { requiresAuth: true, requiresStaff: true, requiresSAdmin: true }, // 需要 admin 权限
                 },
                 { path: '', redirect: { name: 'home' } }
             ]
         },
-        { path: '/:catchAll(.*)', redirect: '/main' } // 处理未知路由
+        { path: '/:catchAll(.*)', redirect: '/login' } // 处理未知路由
     ]
 });
 
@@ -70,22 +83,22 @@ router.beforeEach((to, _from, next) => {
                     // 需要 staff 权限的路由 meta.requiresStaff === true
                     if (to.matched.some(record => record.meta.requiresStaff)) {
                         if (role === 'staff' || role === 'admin') {
-                            if (to.matched.some(record => record.meta.requiresAdmin)) {
+                            if (to.matched.some(record => record.meta.requiresSAdmin)) {
                                 if (role === 'admin') {
                                     next(); // admin 角色放行
                                 } else {
-                                    next({ name: 'login' }); // 非 admin 无权限
+                                    next({ name: 'unauthorized' }); // 非 admin 无权限
                                 }
                             }
                             next(); // staff 角色放行
                         } else {
-                            next({ name: 'login' }); // 非 staff 无权限
+                            next({ name: 'unauthorized' }); // 非 staff 无权限
                         }
                     } else {
                         next(); // 不需要 staff 权限的路由放行
                     }
                 } else {
-                    next({ name: 'login' }); // 验证失败
+                    next({ name: 'unauthorized' }); // 验证失败
                 }
             })
                 .catch(() => {

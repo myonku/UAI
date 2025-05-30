@@ -1,4 +1,5 @@
 package com.example.uai.controllers;
+
 import com.example.uai.models.User;
 import com.example.uai.repository.UserRepository;
 import com.example.uai.utils.TokenUtil;
@@ -6,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,16 +48,17 @@ public class AuthController {
 
     // 登录
     @PostMapping("/login")
-    public Object login(@RequestParam String name, @RequestParam String password) {
+    public Object login(@RequestBody User xuser) {
         try {
+            String name = xuser.getUsername();
+            String password = xuser.getPassword();
             Optional<User> user = userRepository.findByUsername(name);
             if (user.isEmpty()) {
                 return "notfound";
             } else {
                 boolean match = passwordEncoder.matches(password, user.get().getPassword());
                 if (match) {
-                    String token = tokenUtil.generateToken(user.get().getId());
-                    return ResponseEntity.ok(token);
+                    return tokenUtil.generateToken(user.get().getId());
                 } else return "error";
             }
         } catch (Exception e) {
@@ -80,7 +83,8 @@ public class AuthController {
 
     // 验证token
     @PostMapping("/verify_token")
-    public Object verifyToken(@RequestParam String token) {
+    public Object verifyToken(@RequestBody Map<String, String> payload) {
+        String token = payload.get("token");
         if (tokenUtil.validateToken(token)){
             UUID userId = tokenUtil.getUserIdFromToken(token);
             Optional<User> user = userRepository.findById(userId);

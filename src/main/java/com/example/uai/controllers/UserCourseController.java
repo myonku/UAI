@@ -1,4 +1,5 @@
 package com.example.uai.controllers;
+
 import com.example.uai.repository.CourseRepository;
 import com.example.uai.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

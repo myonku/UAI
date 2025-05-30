@@ -1,4 +1,5 @@
 package com.example.uai.repository;
+
 import com.example.uai.models.Credit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;

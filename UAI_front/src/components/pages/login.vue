@@ -104,8 +104,8 @@ const login = async () => {
   handleCheckboxChange();
   try {
      const params = {
-       name: this.username,
-       password: this.password,
+       username: user.value,
+       password: pass.value,
     }
     const response = await axios.post('/api/auth/login', params,{
       headers: { 'Content-Type': 'application/json' }

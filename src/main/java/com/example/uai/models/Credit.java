@@ -1,4 +1,5 @@
 package com.example.uai.models;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.UUID;

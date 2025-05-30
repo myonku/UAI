@@ -1,8 +1,7 @@
 package com.example.uai.models;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -16,7 +15,6 @@ public class User {
     public String email;
     public String username;
     public String avatarPath;
-    // @JsonIgnore
     public String password;
     public String role;    // 角色：student, staff, default, admin
     public String status;  // 状态：active, inactive, banned

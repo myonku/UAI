@@ -1,11 +1,12 @@
 package com.example.uai.repository;
+
+import com.example.uai.models.User;
+import com.example.uai.models.UserDto;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import com.example.uai.models.UserDto;
-import org.springframework.data.jpa.repository.JpaRepository;
-import com.example.uai.models.User;
-import org.springframework.data.jpa.repository.Query;
 
 
 public interface UserRepository extends JpaRepository<User, UUID> {

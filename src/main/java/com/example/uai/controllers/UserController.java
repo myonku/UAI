@@ -1,12 +1,13 @@
 package com.example.uai.controllers;
-import java.util.Objects;
-import java.util.UUID;
+
+import com.example.uai.models.User;
+import com.example.uai.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import com.example.uai.models.User;
-import com.example.uai.repository.UserRepository;
+import java.util.Objects;
+import java.util.UUID;
 
 
 

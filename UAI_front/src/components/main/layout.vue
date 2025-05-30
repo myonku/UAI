@@ -4,7 +4,7 @@
     <el-page-header @back="goBack">
       <template #content>
         <div class="flex items-center">
-          <el-image style="height: 32px;margin-right: 10px;" class="mr-3" src="/sd1.png" />
+          <el-image style="height: 32px;margin-right: 10px;" class="mr-3" src="/sd.png" />
         </div>
       </template>
       <template #extra>
@@ -28,7 +28,7 @@
           <el-avatar class="mr-3" :size="32" :src="`http://127.0.0.1:8080${currentAvatar}`" />
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item disabled>xxxxxxxxxx</el-dropdown-item>
+              <el-dropdown-item disabled>————</el-dropdown-item>
               <el-dropdown-item>
                 <div style="height: 100%;width: 100%;text-align: center;" @click="user">个人信息</div>
               </el-dropdown-item>
@@ -46,23 +46,30 @@
       <el-menu :default-active="currentRoute" style="height: 80%;" :router="true">
         <el-menu-item index="1" :route="{ name: 'home' }" @click="clickRoute('1')">
           <el-icon>
-            <HomeFilled />
+            <House />
           </el-icon>
           <template #title>主页</template>
         </el-menu-item>
 
         <el-menu-item index="2" :route="{ name: 'user' }" @click="clickRoute('2')">
           <el-icon>
-            <UserFilled />
+            <User />
           </el-icon>
           <template #title>个人</template>
         </el-menu-item>
 
-        <el-menu-item index="3" :route="{ name: 'others' }" @click="clickRoute('3')">
+        <el-menu-item index="3" :route="{ name: 'teacher' }" @click="clickRoute('3')">
           <el-icon>
-            <Setting />
+            <UserFilled />
           </el-icon>
-          <template #title>其他</template>
+          <template #title>教师</template>
+        </el-menu-item>
+
+        <el-menu-item index="4" :route="{ name: 'admin' }" @click="clickRoute('4')">
+          <el-icon>
+            <Avatar />
+          </el-icon>
+          <template #title>管理员</template>
         </el-menu-item>
       </el-menu>
     </el-drawer>
@@ -74,24 +81,32 @@
                  :router="true">
           <el-menu-item index="1" :route="{ name: 'home' }" @click="clickRoute('1')">
             <el-icon>
-              <HomeFilled />
+              <House />
             </el-icon>
             <template #title>主页</template>
           </el-menu-item>
 
           <el-menu-item index="2" :route="{ name: 'user' }" @click="clickRoute('2')">
             <el-icon>
-              <UserFilled />
+              <User />
             </el-icon>
-            <template #title>个人</template>
+            <template #title>个人·</template>
           </el-menu-item>
 
-          <el-menu-item index="3" :route="{ name: 'others' }" @click="clickRoute('3')">
+          <el-menu-item index="3" :route="{ name: 'teacher' }" @click="clickRoute('3')">
             <el-icon>
-              <Setting />
+              <UserFilled />
             </el-icon>
-            <template #title>其他</template>
+            <template #title>教师·</template>
           </el-menu-item>
+
+          <el-menu-item index="4" :route="{ name: 'admin' }" @click="clickRoute('4')">
+            <el-icon>
+              <Avatar />
+            </el-icon>
+            <template #title>管理员</template>
+          </el-menu-item>
+
           <hr>
           <el-menu-item @click="handleCollapse">
             <el-icon>
@@ -111,7 +126,7 @@
       <el-main :style="{ transition: '0.2s' }" style="overflow-y: auto;height: 100%;position: relative;">
         <router-view v-slot="{ Component }">
           <component ref="child" :is="Component" @update:info="handleInfoUpdate" @msgevent="send_confirm_msg"></component>
-        </router-view> />
+        </router-view>
       </el-main>
     </el-container>
 
@@ -161,7 +176,7 @@ import { ref, onMounted, watch, computed } from "vue";
 import { useDark } from "@vueuse/core";
 import { useRoute, useRouter } from 'vue-router';
 import { ElNotification } from 'element-plus';
-import {Expand, Fold, HomeFilled, Moon, Setting, Sunny, UserFilled} from "@element-plus/icons-vue";
+import {Avatar, Expand, Fold, House, Moon, Sunny, User, UserFilled} from "@element-plus/icons-vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -183,7 +198,8 @@ const handleResize = () => {
 const currentRoute = computed(() => {
   if (route.name === 'home') return '1';
   else if (route.name === 'user') return '2';
-  else if (route.name === 'others') return '3';
+  else if (route.name === 'teacher') return '3';
+  else if (route.name === 'admin') return '4';
   return ''; // 默认空，如果没有匹配的
 });
 

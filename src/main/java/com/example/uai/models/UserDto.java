@@ -1,6 +1,6 @@
 package com.example.uai.models;
-import lombok.Data;
 
+import lombok.Data;
 import java.util.UUID;
 
 
