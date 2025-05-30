@@ -17,8 +17,8 @@ export default defineConfig({
     // 跨域代理
     proxy: {
       '/api': {
-        // 凡是遇到 /api 路径的请求，都映射到 target 属性  /api/header/  ---> http://xxx:8000/api/header/
-        target: 'http://127.0.0.1:8000/',
+        //  /api 路径的请求都映射到 target 属性  /api/header  ---> http://xxx:8000/header
+        target: 'http://127.0.0.1:8080/',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/api/, '')
       }

@@ -1,73 +1,97 @@
 package com.example.uai.controllers;
 import com.example.uai.models.User;
 import com.example.uai.repository.UserRepository;
+import com.example.uai.utils.TokenUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-
+import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
+import java.util.UUID;
 
-@Controller("auth")
+
+@RestController
+@RequestMapping("auth")
 public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenUtil tokenUtil;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    @Autowired
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenUtil tokenUtil) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokenUtil = tokenUtil;
     }
 
     // 注册
     @PostMapping("/register")
-    public ResponseEntity<Object> register(@RequestBody User user) {
+    public Object register(@RequestBody User user) {
         try {
             String password = user.getPassword();
             String encrypted = passwordEncoder.encode(password);
             user.setPassword(encrypted);
+            UUID id = UUID.randomUUID();
+            user.setId(id);
+            user.setRole("default");
+            user.setStatus("active");
+
             userRepository.save(user);
-            return ResponseEntity.ok(user.getId());
+            return "success";
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
 
     // 登录
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestParam String name, @RequestParam String password) {
+    public Object login(@RequestParam String name, @RequestParam String password) {
         try {
             Optional<User> user = userRepository.findByUsername(name);
             if (user.isEmpty()) {
-                return ResponseEntity.badRequest().body("User not found");
+                return "notfound";
             } else {
                 boolean match = passwordEncoder.matches(password, user.get().getPassword());
                 if (match) {
-                    return ResponseEntity.ok(user.get().getId());
-                } else return ResponseEntity.ok().body("Incorrect password");
+                    String token = tokenUtil.generateToken(user.get().getId());
+                    return ResponseEntity.ok(token);
+                } else return "error";
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
 
     // 验证注册数据
-    @GetMapping("/checkRegister")
-    public ResponseEntity<Object> checkRegister(@RequestParam String name, @RequestParam String email) {
+    @PostMapping("/checkRegister")
+    public Object checkRegister(@RequestParam String name) {
         try {
-            if (userRepository.existsByUsername(name) || userRepository.existsByEmail(email)) {
-                return ResponseEntity.ok().body("User already exists");
-            } else {
-                return ResponseEntity.ok().body("ok");
-            }
+            if (userRepository.existsByUsername(name)) {
+                return "error";
+            } else
+                return "success";
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
+
+    // 验证token
+    @PostMapping("/verify_token")
+    public Object verifyToken(@RequestParam String token) {
+        if (tokenUtil.validateToken(token)){
+            UUID userId = tokenUtil.getUserIdFromToken(token);
+            Optional<User> user = userRepository.findById(userId);
+            if (user.isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            return user.get().getRole();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
 }
 
