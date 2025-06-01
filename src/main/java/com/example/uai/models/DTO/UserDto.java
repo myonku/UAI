@@ -1,4 +1,4 @@
-package com.example.uai.models;
+package com.example.uai.models.DTO;
 
 import lombok.Data;
 import java.util.UUID;

@@ -1,13 +1,12 @@
 package com.example.uai.controllers;
 
+import com.example.uai.models.DTO.UserCourseDto;
 import com.example.uai.repository.CourseRepository;
 import com.example.uai.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -27,8 +26,10 @@ public class UserCourseController {
 
     // 为某用户新增课程（多个）
     @PostMapping("/addCourse")
-    public Object addCourseToUser(@RequestParam UUID userId, @RequestParam List<UUID> courseIds) {
+    public Object addCourseToUser(@RequestBody UserCourseDto userCourseDto) {
         try {
+            UUID userId = userCourseDto.getUserId();
+            List<UUID> courseIds = userCourseDto.getCourseIds();
             var user = userRepository.findById(userId);
             var courses = courseRepository.findAllById(courseIds);
             if (user.isEmpty() || courses.isEmpty()) {

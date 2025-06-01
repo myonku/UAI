@@ -21,4 +21,7 @@ public interface CreditRepository extends JpaRepository<Credit, UUID> {
 
     // 检查是否存在某学生某门课程的学分记录
     boolean existsByStudentIdAndCourseId(UUID studentId, UUID courseId);
+
+    // 判断是否有某课程的学分记录
+    boolean existsByCourseId(UUID courseId);
 }

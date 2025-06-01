@@ -46,8 +46,8 @@ const router = createRouter({
                     meta: { requiresAuth: true },
                 },
                 {
-                    path: "teacher",
-                    name: "teacher",
+                    path: "username",
+                    name: "username",
                     component: teacher,
                     meta: { requiresAuth: true, requiresStaff: true }, // 需要 staff 权限
                 },

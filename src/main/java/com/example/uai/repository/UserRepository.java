@@ -1,7 +1,7 @@
 package com.example.uai.repository;
 
 import com.example.uai.models.User;
-import com.example.uai.models.UserDto;
+import com.example.uai.models.DTO.UserDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import java.util.List;
@@ -15,7 +15,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByUsername(String username);
 
     // 获取所有用户（排除密码字段）
-    @Query("SELECT new com.example.uai.models.UserDto(u.id, u.username, u.email, u.role, u.avatarPath, u.status) FROM User u")
+    @Query("SELECT new com.example.uai.models.DTO.UserDto(u.id, u.username, u.email, u.role, u.avatarPath, u.status) FROM User u")
     List<UserDto> findAllWithoutPassword();
 
     // 判断邮箱是否已存在
@@ -25,11 +25,15 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByUsername(String username);
 
     // 通过邮箱查找用户（排除密码字段，返回UserDTO）
-    @Query("SELECT new com.example.uai.models.UserDto(u.id, u.username, u.email, u.role, u.avatarPath, u.status) FROM User u WHERE u.email = :email")
+    @Query("SELECT new com.example.uai.models.DTO.UserDto(u.id, u.username, u.email, u.role, u.avatarPath, u.status) FROM User u WHERE u.email = :email")
     Optional<UserDto> findDTOByEmail(String email);
 
     // 通过用户id查找用户（排除密码字段，返回UserDTO）
-    @Query("SELECT new com.example.uai.models.UserDto(u.id, u.username, u.email, u.role, u.avatarPath, u.status) FROM User u WHERE u.id = :id")
-    Optional<UserDto> findDTOById(UUID id);
+    @Query("SELECT new com.example.uai.models.DTO.UserDto(u.id, u.username, u.email, u.role, u.avatarPath, u.status) FROM User u WHERE u.id = :id")
+    UserDto findDTOById(UUID id);
+
+    // 通过课程id查找用户
+    @Query("SELECT u FROM User u JOIN u.courses c WHERE c.id = :courseId")
+    List<User> findUsersByCourseId(UUID courseId);
 
 }

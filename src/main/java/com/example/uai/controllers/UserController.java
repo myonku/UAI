@@ -1,14 +1,14 @@
 package com.example.uai.controllers;
-
+import com.example.uai.models.DTO.UserDto;
 import com.example.uai.models.User;
+import com.example.uai.repository.CreditRepository;
 import com.example.uai.repository.UserRepository;
+import com.example.uai.utils.TokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import java.util.Objects;
-import java.util.UUID;
-
+import java.util.*;
 
 
 @RestController
@@ -16,18 +16,34 @@ import java.util.UUID;
 public class UserController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenUtil tokenUtil;
 
     @Autowired
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenUtil tokenUtil, CreditRepository creditRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokenUtil = tokenUtil;
     }
 
-    // 获取所有用户
-    @GetMapping
-    public Object getAllUsers() {
+    // 获取所有用户（排除所有role不是admin的用户）
+    @GetMapping("/all")
+    public Object getAllUsers(@RequestHeader("token") String token) {
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.badRequest().body("Token is required");
+        }
+        UUID userId = tokenUtil.getUserIdFromToken(token);
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(403).body("User not found");
+        }
+        if (!"admin".equals(userOptional.get().getRole())) {
+            return ResponseEntity.status(403).body("Access denied");
+        }
         try {
-            return userRepository.findAllWithoutPassword();
+            List<UserDto> users = userRepository.findAllWithoutPassword();
+            return users.stream()
+                .filter(user -> !"admin".equals(user.getRole()))
+                .toList();
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.badRequest().build();
@@ -35,17 +51,38 @@ public class UserController {
     }
 
     // 获取用户信息
-    @PostMapping("/userInfo")
-    public Object getUserInfo(@RequestBody UUID id) {
+    @GetMapping("/userInfo")
+    public Object getUserInfo(@RequestHeader("token") String token) {
         try {
-            return userRepository.findDTOById(id)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
+            UUID id = tokenUtil.getUserIdFromToken(token);
+            if (token.isEmpty() || id == null) {
+                return ResponseEntity.badRequest().body("Invalid token");
+            }
+            UserDto user = userRepository.findDTOById(id);
+            return Objects.requireNonNullElseGet(user, () -> ResponseEntity.notFound().build());
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
+
+    // 获取用户名
+    @GetMapping("/username")
+    public ResponseEntity<String> getUsername(@RequestHeader("token") String token) {
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.badRequest().body("Token is required");
+        }
+        try {
+            UUID id = tokenUtil.getUserIdFromToken(token);
+            return userRepository.findById(id)
+                .map(user -> ResponseEntity.ok(user.getUsername()))
+                .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
 
     // 更新用户
     @PutMapping("/{id}")
@@ -85,4 +122,5 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
     }
+
 }
