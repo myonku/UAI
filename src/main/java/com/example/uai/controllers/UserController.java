@@ -1,4 +1,5 @@
 package com.example.uai.controllers;
+import com.example.uai.models.DTO.StudentCredit;
 import com.example.uai.models.DTO.UserDto;
 import com.example.uai.models.User;
 import com.example.uai.repository.CreditRepository;
@@ -25,7 +26,7 @@ public class UserController {
         this.tokenUtil = tokenUtil;
     }
 
-    // 获取所有用户（排除所有role不是admin的用户）
+    // 获取所有用户（排除所有role是admin的用户）
     @GetMapping("/all")
     public Object getAllUsers(@RequestHeader("token") String token) {
         if (token == null || token.isEmpty()) {
@@ -117,6 +118,18 @@ public class UserController {
                     return ResponseEntity.noContent().build();
                 })
                 .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // 根据课程ID获取所有学生的课程和学分信息
+    @GetMapping("/course/{courseId}/students")
+    public ResponseEntity<?> getStudentsByCourseId(@PathVariable UUID courseId) {
+        try {
+            List<StudentCredit> studentCredits = userRepository.findStudentCreditsByCourseId(courseId);
+            return ResponseEntity.ok(studentCredits);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.badRequest().build();

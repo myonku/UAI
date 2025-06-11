@@ -3,6 +3,7 @@ package com.example.uai.controllers;
 import com.example.uai.models.Course;
 import com.example.uai.models.Credit;
 import com.example.uai.models.User;
+import com.example.uai.models.DTO.CreditDto;
 import com.example.uai.repository.CourseRepository;
 import com.example.uai.repository.CreditRepository;
 import com.example.uai.repository.UserRepository;
@@ -51,11 +52,10 @@ import java.util.UUID;
 
     // 新增某学生的学分记录
     @PostMapping("/credits")
-    public ResponseEntity<Object> addCredit(@RequestBody Credit credit) {
+    public ResponseEntity<Object> addCredit(@RequestBody CreditDto creditDto) {
         try {
-            // 只用id查找student和course
-            UUID studentId = credit.getStudent() != null ? credit.getStudent().getId() : null;
-            UUID courseId = credit.getCourse() != null ? credit.getCourse().getId() : null;
+            UUID studentId = creditDto.getStudentId();
+            UUID courseId = creditDto.getCourseId();
             if (creditRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
                 return ResponseEntity.badRequest().body("该学生已存在此课程的学分记录");
             }
@@ -67,8 +67,11 @@ import java.util.UUID;
             if (student == null || course == null) {
                 return ResponseEntity.badRequest().body("student或course不存在");
             }
+            Credit credit = new Credit();
+            credit.setId(UUID.randomUUID());
             credit.setStudent(student);
             credit.setCourse(course);
+            credit.setCreditValue(creditDto.getCreditValue());
             creditRepository.save(credit);
             return ResponseEntity.ok().build();
         } catch (Exception e) {

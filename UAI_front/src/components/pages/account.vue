@@ -30,7 +30,7 @@
         </div>
 
         <!--基本信息更新表单 -->
-        <el-dialog v-model="dialogFormVisible" title="更新基本信息" width="500px">
+        <el-dialog v-model="dialogFormVisible" title="更新基本信息" width="500px" align-center>
             <el-form :model="form" label-width="100px">
                 <el-form-item label="用户名">
                     <el-input v-model="form.username" />
@@ -60,7 +60,7 @@
         </el-dialog>
 
         <!--密码修改表单 -->
-        <el-dialog v-model="showPasswordDialog" title="修改密码" width="500px">
+        <el-dialog v-model="showPasswordDialog" title="修改密码" width="500px" align-center>
             <el-form :model="passwordForm" label-width="120px" :rules="passwordRules" ref="passwordFormRef">
                 <el-form-item label="当前密码" prop="currentPassword">
                     <el-input v-model="passwordForm.currentPassword" type="password" show-password

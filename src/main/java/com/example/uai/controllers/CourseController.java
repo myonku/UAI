@@ -105,19 +105,20 @@ public class CourseController {
 
     // 更新课程
     @PutMapping("/courses/{id}")
-    public Object updateCourse(@PathVariable UUID id, @RequestBody Course courseDetails) {
+    public ResponseEntity<?> updateCourse(@PathVariable UUID id, @RequestBody Course courseDetails) {
         try {
             return courseRepository.findById(id)
                     .map(course -> {
                         course.setName(courseDetails.getName());
                         course.setDescription(courseDetails.getDescription());
                         // 其他字段...
-                        return courseRepository.save(course);
+                        Course updatedCourse = courseRepository.save(course);
+                        return ResponseEntity.ok(updatedCourse);
                     })
-                    .orElse((Course) ResponseEntity.notFound());
+                    .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return ResponseEntity.badRequest();
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -154,7 +155,7 @@ public class CourseController {
             // 从token中获取用户ID
             UUID userId = tokenUtil.getUserIdFromToken(token);
             // 1. 验证用户存在
-            User user = userRepository.findById(userId)
+            userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("用户不存在"));
             // 2. 获取用户所有课程（包括没有学分记录的）
             List<Course> courses = courseRepository.findByUsersId(userId);
@@ -196,7 +197,7 @@ public class CourseController {
         try {
             // 从token中获取用户ID
             UUID userId = tokenUtil.getUserIdFromToken(token);
-            User user = userRepository.findById(userId)
+            userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("用户不存在"));
             // 获取用户未选课程
             return courseRepository.findAvailableCourses(userId);

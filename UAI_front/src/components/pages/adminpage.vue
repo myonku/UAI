@@ -225,8 +225,8 @@ onMounted(async () => {
         <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="filteredUsers.length"
             :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next, jumper" background />
     </div>
-    <el-dialog v-model="editDialogVisible" :title="editUser ? '编辑用户' : '添加新用户'" width="500px" class="edit-dialog"
-        :close-on-click-modal="false">
+    <el-dialog v-model="editDialogVisible" align-center :title="editUser ? '编辑用户' : '添加新用户'" width="500px"
+        class="edit-dialog" :close-on-click-modal="false">
         <el-form :model="editForm" label-width="80px" class="edit-form">
             <el-form-item label="用户名">
                 <el-input v-model="editForm.username" placeholder="请输入用户名" />

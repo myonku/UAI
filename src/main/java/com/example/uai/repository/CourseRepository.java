@@ -2,6 +2,7 @@ package com.example.uai.repository;
 
 import com.example.uai.models.Course;
 import com.example.uai.models.DTO.SimpleCourseDto;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,5 +33,4 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
     @Query("SELECT new com.example.uai.models.DTO.SimpleCourseDto(c.id, c.name, c.description) " +
             "FROM Course c JOIN c.users u WHERE u.id = :userId")
     List<SimpleCourseDto> findCoursesByUserId(@Param("userId") UUID userId);
-
 }
