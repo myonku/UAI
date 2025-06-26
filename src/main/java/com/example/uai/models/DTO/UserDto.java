@@ -12,6 +12,9 @@ public class UserDto {
     private String role;
     private String avatarPath;
     private String status;
+    public Long courseNum;
+    public Double totalScore;
+    public Long noCreditCourseNum;
 
     public UserDto(UUID id, String username, String email, String role, String avatarPath, String status) {
         this.id = id;

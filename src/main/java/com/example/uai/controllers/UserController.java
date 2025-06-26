@@ -26,7 +26,7 @@ public class UserController {
         this.tokenUtil = tokenUtil;
     }
 
-    // 获取所有用户（排除所有role是admin的用户）
+    // 获取所有用户（排除所有admin）
     @GetMapping("/all")
     public Object getAllUsers(@RequestHeader("token") String token) {
         if (token == null || token.isEmpty()) {
@@ -60,6 +60,13 @@ public class UserController {
                 return ResponseEntity.badRequest().body("Invalid token");
             }
             UserDto user = userRepository.findDTOById(id);
+            Object[] result = (Object[]) userRepository.findCourseCountAndTotalCreditsAndNoCreditCountByUserId(id);
+            Long courseCount = (Long) result[0];
+            Number totalCredits = (Number) result[1]; // 可能是 Long、Double 或 BigDecimal
+            Long noCreditCount = (Long) result[2];
+            user.setCourseNum(courseCount);
+            user.setTotalScore(totalCredits != null ? totalCredits.doubleValue() : 0.0);
+            user.setNoCreditCourseNum(noCreditCount);
             return Objects.requireNonNullElseGet(user, () -> ResponseEntity.notFound().build());
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -89,19 +96,33 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<Object> updateUser(@PathVariable UUID id, @RequestBody User userDetails) {
         try {
-            return userRepository.findById(id)
-                .map(user -> {
-                    user.setUsername(userDetails.getUsername());
-                    user.setEmail(userDetails.getEmail());
-                    if (!Objects.equals(userDetails.getPassword(), "")) {
-                        String newPassword = passwordEncoder.encode(userDetails.getPassword());
-                        user.setPassword(newPassword);
-                    }
-                    user.setRole(userDetails.getRole());
-                    userRepository.save(user);
-                    return ResponseEntity.ok().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+            User user = userRepository.findById(id).orElse(null);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found");
+            }
+            if (userDetails.getUsername() != null) {
+                user.setUsername(userDetails.getUsername());
+            }
+            if (userDetails.getEmail() != null) {
+                user.setEmail(userDetails.getEmail());
+            }
+            if (userDetails.getRole() != null) {
+                user.setRole(userDetails.getRole());
+            }
+            if (!Objects.equals(userDetails.getPassword(),"")) {
+                // !important：此处avatar字段临时替代currentPass，不作为更新数据
+                boolean match1 = passwordEncoder.matches(userDetails.getAvatarPath(), user.getPassword());
+                boolean match2 = passwordEncoder.matches(userDetails.getPassword(), user.getPassword());
+                if (!match1) {
+                    return ResponseEntity.status(401).body("Unauthorized");
+                } else if (match2) {
+                    return ResponseEntity.status(403).body("Password has be used");
+                }
+                String newPassword = passwordEncoder.encode(userDetails.getPassword());
+                user.setPassword(newPassword);
+            }
+            userRepository.save(user);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.badRequest().build();

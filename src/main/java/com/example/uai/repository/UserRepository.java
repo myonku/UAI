@@ -55,4 +55,17 @@ public interface UserRepository extends JpaRepository<User, UUID> {
         where c.id = :courseId and u.role = 'student'
     """)
     List<StudentCredit> findStudentCreditsByCourseId(@Param("courseId") UUID courseId);
+
+    // 根据id查询用户关联的课程总数、总学分值（学分表的value字段）、以及没有学分信息的课程数量
+    @Query("""
+        select 
+            count(c.id) as courseCount, 
+            sum(cr.creditValue) as totalCredits,
+            count(case when cr.creditValue is null then 1 end) as noCreditCount
+        from User u
+        join u.courses c
+        left join Credit cr on cr.student = u and cr.course = c
+        where u.id = :userId
+    """)
+    Object findCourseCountAndTotalCreditsAndNoCreditCountByUserId(@Param("userId") UUID userId);
 }

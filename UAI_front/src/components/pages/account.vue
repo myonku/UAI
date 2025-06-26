@@ -87,15 +87,15 @@
                     <h3>课程信息</h3>
                     <div class="stats">
                         <div class="stat-card">
-                            <div class="stat-value">{{ user.courses?.length || 0 }}</div>
+                            <div class="stat-value">{{ user.courseNum }}</div>
                             <div class="stat-label">已选课程</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">{{ completedCredits }}</div>
+                            <div class="stat-value">{{ user.totalScore }}</div>
                             <div class="stat-label">已获学分</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">{{ activeCourses }}</div>
+                            <div class="stat-value">{{ user.noCreditCourseNum }}</div>
                             <div class="stat-label">在学课程</div>
                         </div>
                     </div>
@@ -128,8 +128,9 @@ const user = reactive({
     avatarPath: '',
     role: '',
     status: '',
-    courses: [],
-    credits: []
+    courseNum: 0,
+    totalScore: 0,
+    noCreditCourseNum: 0
 });
 
 // 基本信息表单
@@ -189,17 +190,6 @@ const statusTagType = computed(() => {
     }
 });
 
-const completedCredits = computed(() => {
-    if (!user.credits) return 0;
-    return user.credits.reduce((sum, credit) => sum + (credit.creditValue || 0), 0);
-});
-
-const activeCourses = computed(() => {
-    if (!user.courses) return 0;
-    return user.courses.length;
-});
-
-// 密码规则
 const passwordRules = {
     currentPassword: [
         { required: true, message: '请输入当前密码', trigger: 'blur' },
@@ -234,7 +224,6 @@ const passwordRules = {
     ]
 };
 
-// 获取用户信息
 const getUserDetails = async () => {
     loading.value = true;
     try {
@@ -243,7 +232,6 @@ const getUserDetails = async () => {
             console.log("Token is required.");
             return
         }
-
         const response = await axios.get('/api/user/userInfo',{
             headers: {
                 'Content-Type': 'application/json',
@@ -253,7 +241,6 @@ const getUserDetails = async () => {
 
         // 更新用户数据
         Object.assign(user, response.data);
-
         // 初始化表单数据
         form.username = user.username;
         form.email = user.email;
@@ -266,7 +253,6 @@ const getUserDetails = async () => {
     }
 };
 
-// 头像上传前检查
 const beforeAvatarUpload = (file) => {
     const isImage = file.type === 'image/jpeg' || file.type === 'image/png';
     const isLt500K = file.size / 1024 < 500;
@@ -318,16 +304,16 @@ const updateUserInfo = async () => {
     try {
         loading.value = true;
         const token = sessionStorage.getItem('token');
-
-        const response = await axios.put('/api/user/profile', form, {
-            headers: { 'Authorization': `Bearer ${token}` }
+        await axios.put(`/api/user/${user.id}`, {
+            username: form.username,
+            email: form.email,
+            password: "" // 不修改密码时传空字符串，后端会忽略
+        }, {
+            headers: { 'token': token }
         });
-
-        // 更新用户数据
-        Object.assign(user, response.data);
         dialogFormVisible.value = false;
-
         ElMessage.success('用户信息更新成功');
+        await getUserDetails();
     } catch (error) {
         ElMessage.error('更新失败: ' + (error.response?.data?.message || error.message));
     } finally {
@@ -340,12 +326,14 @@ const updatePassword = async () => {
     try {
         loading.value = true;
         const token = sessionStorage.getItem('token');
-
-        await axios.put('/api/user/password', {
-            currentPassword: passwordForm.currentPassword,
-            newPassword: passwordForm.newPassword
+        await axios.put(`/api/user/${user.id}`, {
+            username: user.username,
+            email: user.email,
+            // !important: 该avatar字段用来临时取代currentPassword字段，不用于信息更新
+            avatarPath: passwordForm.currentPassword,
+            password: passwordForm.newPassword
         }, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'token': token }
         });
 
         showPasswordDialog.value = false;
@@ -354,8 +342,16 @@ const updatePassword = async () => {
         passwordForm.confirmPassword = '';
 
         ElMessage.success('密码更新成功');
+        await getUserDetails();
     } catch (error) {
-        ElMessage.error('密码更新失败: ' + (error.response?.data?.message || error.message));
+        if (error.response && error.response.status == 401) {
+            ElMessage.error('原密码错误');
+        } else if (error.response && error.response.status == 403) {
+            ElMessage.error('新密码不能和旧密码相同');
+        } else {
+            ElMessage.error('未知错误，更新密码失败');
+            console.error('更新密码时发生错误:', error);
+        }
     } finally {
         loading.value = false;
     }
